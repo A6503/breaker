@@ -46,6 +46,7 @@ namespace Game
                         Console.Write("[{1}]", layout[w, h]);
                     }
                 }
+                Console.Write("\n");
             }
         }
 

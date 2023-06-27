@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Game
 {
     public enum ObjectRepresentation
@@ -38,7 +39,7 @@ namespace Game
 
 
 
-        private void Start()
+        private void Setup()
         {
             
             Console.WriteLine("Welcome to BlockBreaker");
@@ -49,28 +50,28 @@ namespace Game
             Console.ReadKey();
             Console.WriteLine("You have 3 lives.");
 
-            Console.WriteLine("Select difficulty: (1-5)");
+            Console.WriteLine("Select map: (1-5)");
             string diff = Console.ReadLine();
             int.TryParse(diff, out difficulty);
             while (difficulty < 1 & difficulty > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
-                Console.WriteLine("Select difficulty: (1-5)");
+                Console.WriteLine("Select map: (1-5)");
                 diff = Console.ReadLine();
                 int.TryParse(diff, out difficulty);
             }
 
-            Console.WriteLine("Selected Difficulty: {1}", difficulty);
-            BuildBoard();
+            Console.WriteLine("Selected map: {1}", difficulty);
+            Build(difficulty);
             Console.WriteLine("Press any key to begin");
             Console.ReadKey();
             serveState = true;
 
         }
 
-        public void Game()
+        public void StartGame()
         {
-            Start();
+            Setup();
             
             while (!gameOver)
             {

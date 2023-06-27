@@ -13,8 +13,8 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.WriteLine("HelloWorld");
-            GameHandler bb = new GameHandler();
-            bb.Game();
+            GameHandler play = new GameHandler();
+            play.StartGame();
             Console.WriteLine("Exiting... (any key to exit)");
             Console.ReadKey();
             return;
