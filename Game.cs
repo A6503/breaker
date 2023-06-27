@@ -22,28 +22,9 @@ namespace Game
         bool serveState = true;
         int difficulty = 0;
 
-        private void BuildBoard()
-        {
-            layout = BoardBuilder.Build(width, height);
-            for (int h = 1; h < height+2; h++)
-            {
-                
-                for (int w = 0; w < width+2; w++)
-                {
-                    if (layout[w, h] == 0)
-                    {
-                        layout[w, h] = difficulty;
-                    }
-                }
-                difficulty -= 1;
-            }
-        }
 
 
-        private void Move(int direction)
-        {
 
-        }
 
         private void LifeLost()
         {
@@ -55,23 +36,7 @@ namespace Game
             }
         }
 
-        private void DrawBoard()
-        {
-            for (int w = width; w < width+2; w++)
-            {
-                for (int h = 0; h < height+2; h++)
-                {
-                    if (Enum.IsDefined(typeof(ObjectRepresentation), layout[w, h]))
-                    {
-                        Console.Write("[{1}]", (ObjectRepresentation)layout[w, h]);
-                    }
-                    else
-                    {
-                        Console.Write("[{1}]", layout[w, h]);
-                    }
-                }
-            }
-        }
+
 
         private void Start()
         {

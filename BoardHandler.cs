@@ -11,25 +11,47 @@ namespace Game
         int bouncerLocation;
         int[] ballLocation = { 0, 0 };
         int[] ballDirection = { 0, 0 };
-        public static int[,] Build(int width, int height)
+        public void Build(int width, int height)
 		{
-			int[,] array = new int[width + 2, height + 2];
+			layout = new int[width + 2, height + 2];
 			for (int w = 0; w < width; w++)
 			{
-				array[w, 0] = -1;
-				array[w, height + 1] = -1;
+				layout[w, 0] = -1;
+				layout[w, height + 1] = -1;
 				if (w == 0 | w == width + 1)
 				{
 					for (int h = 1; h < height + 1; h++)
 					{
-						array[w, h] = -1;
+						layout[w, h] = -1;
 					}
 				}
 
 			}
-			return array;
 
 
 		}
-	}
+
+        public void DrawBoard()
+        {
+            for (int w = width; w < width + 2; w++)
+            {
+                for (int h = 0; h < height + 2; h++)
+                {
+                    if (Enum.IsDefined(typeof(ObjectRepresentation), layout[w, h]))
+                    {
+                        Console.Write("[{1}]", (ObjectRepresentation)layout[w, h]);
+                    }
+                    else
+                    {
+                        Console.Write("[{1}]", layout[w, h]);
+                    }
+                }
+            }
+        }
+
+        public int Move(int direction)
+        {
+            return 0;
+        }
+    }
 }
