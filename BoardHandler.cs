@@ -3,7 +3,17 @@ using System.Linq;
 
 namespace Game
 {
-	public class BoardHandler
+    public enum ObjectRepresentation
+    {
+        X = -1, // Wall
+        O = -2, // Ball
+        d = -3 // Bouncer left
+        T = -4 // Bouncer middle
+        b = -5 // Bouncer right
+
+    }
+
+    public class BoardHandler
 	{
         int[,] layout;
         int width;

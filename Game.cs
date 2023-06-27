@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 
 namespace Game
 {
-    public enum ObjectRepresentation
-    {
-        X = -1, // Wall
-        O = -2, // Ball
-        _ = -3 // Bouncer
-    }
+
 
 
     public class GameHandler
@@ -21,11 +16,8 @@ namespace Game
         int livesLeft = 3;
         bool gameOver = false;
         bool serveState = true;
-        int difficulty = 0;
-
-
-
-
+        int mapLevel = 0;
+        BoardHandler gameBoard;
 
         private void LifeLost()
         {
@@ -50,19 +42,21 @@ namespace Game
             Console.ReadKey();
             Console.WriteLine("You have 3 lives.");
 
+            // Player chooses a preset map
             Console.WriteLine("Select map: (1-5)");
-            string diff = Console.ReadLine();
-            int.TryParse(diff, out difficulty);
-            while (difficulty < 1 & difficulty > 5)
+            string mapSelect = Console.ReadLine();
+            int.TryParse(mapSelect, out mapLevel);
+            while (mapLevel < 1 & mapLevel > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
-                diff = Console.ReadLine();
-                int.TryParse(diff, out difficulty);
+                mapSelect = Console.ReadLine();
+                int.TryParse(mapSelect, out mapLevel);
             }
 
-            Console.WriteLine("Selected map: {1}", difficulty);
-            Build(difficulty);
+            Console.WriteLine("Selected map: {1}", mapLevel);
+            
+            Build(mapLevel);
             Console.WriteLine("Press any key to begin");
             Console.ReadKey();
             serveState = true;
@@ -71,6 +65,7 @@ namespace Game
 
         public void StartGame()
         {
+            // Prepare the Board
             Setup();
             
             while (!gameOver)
@@ -80,11 +75,14 @@ namespace Game
                     Console.WriteLine("Choose a spot, then hit another key to send the ball.");
                 }
                 DrawBoard();
-                ConsoleKeyInfo key = Console.ReadKey();
-                if (key.Key == ConsoleKey.Enter)
-                {
+                Thread.Sleep(400);
+                if (Console.KeyAvailable){
+                    ConsoleKeyInfo playerMove = Console.ReadKey();
+                    
+                }else{
                     Move(0);
                 }
+
 
             }
         }
