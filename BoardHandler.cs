@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Game
 {
-    public enum ObjectRepresentation
+    public enum BoardObjectRepresentation
     {
         X = -1, // Wall
         O = -2, // Ball
@@ -21,6 +21,7 @@ namespace Game
         int bouncerLocation;
         int[] ballLocation = { 0, 0 };
         int[] ballDirection = { 0, 0 };
+        
         public void Build(int width, int height)
 		{
 			layout = new int[width + 2, height + 2];
@@ -47,9 +48,9 @@ namespace Game
             {
                 for (int h = 0; h < height + 2; h++)
                 {
-                    if (Enum.IsDefined(typeof(ObjectRepresentation), layout[w, h]))
+                    if (Enum.IsDefined(typeof(BoardObjectRepresentation), layout[w, h]))
                     {
-                        Console.Write("[{1}]", (ObjectRepresentation)layout[w, h]);
+                        Console.Write("[{1}]", (BoardObjectRepresentation)layout[w, h]);
                     }
                     else
                     {
@@ -60,9 +61,25 @@ namespace Game
             }
         }
 
-        public int Move(int direction)
+        public int UpdateBoard()
         {
             return 0;
+        }
+
+        public int Move(int direction)
+        {
+            if (bouncerLocation + direction*2)
+            return 0;
+        }
+
+        public int Launch()
+        {
+            if (ballDirection == {0,0}) 
+            {
+                ballDirection = {0,1};
+                return 0;
+            }
+            return -1;
         }
     }
 }

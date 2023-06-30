@@ -56,7 +56,7 @@ namespace Game
 
             Console.WriteLine("Selected map: {1}", mapLevel);
             
-            Build(mapLevel);
+            gameBoard.Build(mapLevel);
             Console.WriteLine("Press any key to begin");
             Console.ReadKey();
             serveState = true;
@@ -66,21 +66,32 @@ namespace Game
         public void StartGame()
         {
             // Prepare the Board
+            gameBoard = new BoardHandler(10, 10); // Size
             Setup();
             
             while (!gameOver)
             {
                 if (serveState)
                 {
-                    Console.WriteLine("Choose a spot, then hit another key to send the ball.");
+                    Console.WriteLine("Choose a spot, then press W to send the ball.");
                 }
-                DrawBoard();
+                gameBoard.DrawBoard();
                 Thread.Sleep(400);
                 if (Console.KeyAvailable){
                     ConsoleKeyInfo playerMove = Console.ReadKey();
+                    if (playerMove.Key = ConsoleKey.W){
+                        gameBoard.Launch();
+                    }
+                    else if (playerMove.Key == ConsoleKey.A){
+                        gameBoard.Move(-1);
+                    }else if (playerMove.Key = ConsoleKey.D){
+                        gameBoard.Move(1);
+                    }else{
+                        gameBoard.Move(0);
+                    }
                     
                 }else{
-                    Move(0);
+                    gameBoard.Move(0);
                 }
 
 
