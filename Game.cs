@@ -13,11 +13,19 @@ namespace Game
     public class GameHandler
     {
 
-        int livesLeft = 3;
-        bool gameOver = false;
-        bool serveState = true;
-        int mapLevel = 0;
-        BoardHandler gameBoard;
+        int livesLeft;
+        bool gameOver;
+        bool serveState;
+        int mapLevel;
+        BoardHandler? gameBoard;
+
+        public GameHandler()
+        {
+            livesLeft = 3;
+            gameOver = false;
+            serveState = true;
+            mapLevel = 0;
+        }
 
         private void LifeLost()
         {

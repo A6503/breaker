@@ -16,14 +16,16 @@ namespace Game
     public class BoardHandler
 	{
         int[,] layout;
-        int width;
-        int height;
+        int boardWidth;
+        int boardHeight;
         int bouncerLocation;
-        int[] ballLocation = { 0, 0 };
-        int[] ballDirection = { 0, 0 };
-        public void Build(int width, int height)
+        int[] ballLocation;
+        int[] ballDirection = new int[2] { 0, 0 };
+        public BoardHandler(int width, int height)
 		{
-			layout = new int[width + 2, height + 2];
+			layout = new int[width, height];
+            boardWidth = width;
+            boardHeight = height;
 			for (int w = 0; w < width; w++)
 			{
 				layout[w, 0] = -1;
@@ -37,15 +39,21 @@ namespace Game
 				}
 
 			}
+            bouncerLocation = width / 2;
+            ballLocation = new int[2] { width / 2, height - 1 };
 
+        }
 
-		}
+        public void BuildBoard(int map)
+        {
+
+        }
 
         public void DrawBoard()
         {
-            for (int w = width; w < width + 2; w++)
+            for (int w = boardWidth; w < boardWidth + 2; w++)
             {
-                for (int h = 0; h < height + 2; h++)
+                for (int h = 0; h < boardHeight + 2; h++)
                 {
                     if (Enum.IsDefined(typeof(ObjectRepresentation), layout[w, h]))
                     {
