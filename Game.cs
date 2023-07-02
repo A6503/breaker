@@ -9,7 +9,6 @@ namespace Game
 {
 
 
-
     public class GameHandler
     {
 
@@ -17,7 +16,7 @@ namespace Game
         bool gameOver;
         bool serveState;
         int mapLevel;
-        BoardHandler? gameBoard;
+        BoardHandler? gameBoard = new BoardHandler(10, 10);
 
         public GameHandler()
         {
@@ -64,7 +63,7 @@ namespace Game
 
             Console.WriteLine("Selected map: {1}", mapLevel);
             
-            gameBoard.Build(mapLevel);
+            gameBoard.BuildBoard(mapLevel);
             Console.WriteLine("Press any key to begin");
             Console.ReadKey();
             serveState = true;
@@ -74,7 +73,7 @@ namespace Game
         public void StartGame()
         {
             // Prepare the Board
-            gameBoard = new BoardHandler(10, 10); // Size
+
             Setup();
             
             while (!gameOver)
@@ -87,12 +86,12 @@ namespace Game
                 Thread.Sleep(400);
                 if (Console.KeyAvailable){
                     ConsoleKeyInfo playerMove = Console.ReadKey();
-                    if (playerMove.Key = ConsoleKey.W){
+                    if (playerMove.Key == ConsoleKey.W){
                         gameBoard.Launch();
                     }
                     else if (playerMove.Key == ConsoleKey.A){
                         gameBoard.Move(-1);
-                    }else if (playerMove.Key = ConsoleKey.D){
+                    }else if (playerMove.Key == ConsoleKey.D){
                         gameBoard.Move(1);
                     }else{
                         gameBoard.Move(0);
@@ -100,6 +99,21 @@ namespace Game
                     
                 }else{
                     gameBoard.Move(0);
+                }
+
+                switch (gameBoard.GetStatus())
+                {
+                    case Status.Dead:
+                        LifeLost();
+                        gameBoard.Reset();
+                        break;
+                    case Status.Victory:
+                        gameOver = true;
+                        break;
+                    case Status.Alive:
+                        break;
+                    default:
+                        break;
                 }
 
 
