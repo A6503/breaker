@@ -40,10 +40,9 @@ namespace Game
             for (int w = 0; w < width; w++)
             {
                 layout[w, 0] = -1;
-                layout[w, height + 1] = -1;
                 if (w == 0 | w == width - 1)
                 {
-                    for (int h = 1; h < height + 1; h++)
+                    for (int h = 1; h < height - 1; h++)
                     {
                         layout[w, h] = -1;
                     }
@@ -69,11 +68,11 @@ namespace Game
                 {
                     if (Enum.IsDefined(typeof(BoardObjectRepresentation), layout[w, h]))
                     {
-                        Console.Write("[{1}]", (BoardObjectRepresentation)layout[w, h]);
+                        Console.Write("[{0}]", (BoardObjectRepresentation)layout[w, h]);
                     }
                     else
                     {
-                        Console.Write("[{1}]", layout[w, h]);
+                        Console.Write("[{0}]", layout[w, h]);
                     }
                 }
                 Console.Write("\n");

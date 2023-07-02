@@ -53,7 +53,7 @@ namespace Game
             Console.WriteLine("Select map: (1-5)");
             string mapSelect = Console.ReadLine();
             int.TryParse(mapSelect, out mapLevel);
-            while (mapLevel < 1 & mapLevel > 5)
+            while (mapLevel < 1 | mapLevel > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
@@ -61,7 +61,7 @@ namespace Game
                 int.TryParse(mapSelect, out mapLevel);
             }
 
-            Console.WriteLine("Selected map: {1}", mapLevel);
+            Console.WriteLine("Selected map: {0}", mapLevel);
             
             gameBoard.BuildBoard(mapLevel);
             Console.WriteLine("Press any key to begin");
