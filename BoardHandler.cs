@@ -57,22 +57,26 @@ namespace Game
 
         public void BuildBoard(int map)
         {
+            UpdateBoard();
             return;
         }
 
         public void DrawBoard()
         {
-            for (int h = boardWidth; h < boardHeight + 2; h++)
+            Console.WriteLine();
+
+            Console.WriteLine();
+            for (int h = 0; h < boardHeight; h++)
             {
-                for (int w = 0; w < boardWidth + 2; w++)
+                for (int w = 0; w < boardWidth; w++)
                 {
                     if (Enum.IsDefined(typeof(BoardObjectRepresentation), layout[w, h]))
                     {
-                        Console.Write("[{0}]", (BoardObjectRepresentation)layout[w, h]);
+                        Console.Write("({0})", (BoardObjectRepresentation)layout[w, h]);
                     }
                     else
                     {
-                        Console.Write("[{0}]", layout[w, h]);
+                        Console.Write(" {0} ", layout[w, h]);
                     }
                 }
                 Console.Write("\n");
@@ -84,8 +88,18 @@ namespace Game
             // Move the Ball
             BallMovement();
             layout[ballLocation[0], ballLocation[1]] = 0;
-            ballLocation[0] += ballDirection[0];
-            ballLocation[1] += ballDirection[1];
+
+            if (ballDirection == frozen) // Ball is on Bouncer
+            {
+                ballLocation[0] = bouncerLocation;
+            }
+            else // Ball is moving
+            {
+                ballLocation[0] += ballDirection[0];
+                ballLocation[1] += ballDirection[1];
+                
+            }
+
             layout[ballLocation[0], ballLocation[1]] = -2;
 
 
@@ -117,6 +131,7 @@ namespace Game
                 return -1;
             }
             bouncerLocation += direction;
+
             UpdateBoard();
             return 0;
         }
@@ -125,7 +140,7 @@ namespace Game
         {
             if (ballDirection == frozen)
             {
-                ballDirection = new int[] { 0, 1 };
+                ballDirection = new int[] { 0, -1 };
                 return 0;
             }
             return -1;
@@ -133,6 +148,11 @@ namespace Game
 
         private int BallMovement()
         {
+            if(ballDirection == frozen)
+            {
+                return 0;
+            }
+
             if (layout[ballLocation[0] + ballDirection[0], ballLocation[1]] < 0) // Check boundary to the side
             {
                 ballDirection[0] *= -1;
@@ -150,7 +170,7 @@ namespace Game
                 ballDirection[1] *= -1;
             }
 
-            if (layout[ballLocation[0], ballLocation[1] + 1] < 0) // Check boundary to the top
+            if (layout[ballLocation[0], ballLocation[1] - 1] < 0) // Check boundary to the top
             {
                 ballDirection[1] *= -1;
             }
@@ -161,17 +181,17 @@ namespace Game
                 ballDirection[1] *= -1;
             }
 
-            if (layout[ballLocation[0], ballLocation[1] - 1] < 0) // Check for the bouncer
+            if (layout[ballLocation[0], ballLocation[1] + 1] < 0) // Check for the bouncer
             {
-                if (layout[ballLocation[0], ballLocation[1] - 1] == -3) // Bouncer Left
+                if (layout[ballLocation[0], ballLocation[1] + 1] == -3) // Bouncer Left
                 {
-                    ballDirection = new int[] { -1, 1 };
-                } else if (layout[ballLocation[0], ballLocation[1] - 1] == -4) // Bouncer Middle
+                    ballDirection = new int[] { -1, -1 };
+                } else if (layout[ballLocation[0], ballLocation[1] + 1] == -4) // Bouncer Middle
                 {
-                    ballDirection = new int[] { 0, 1 };
-                } else if (layout[ballLocation[0], ballLocation[1] - 1] == -5) // Bouncer Right
+                    ballDirection = new int[] { 0, -1 };
+                } else if (layout[ballLocation[0], ballLocation[1] + 1] == -5) // Bouncer Right
                 {
-                    ballDirection = new int[] { 1, 1 };
+                    ballDirection = new int[] { 1, -1 };
                 }
             }
             return 0;

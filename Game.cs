@@ -81,15 +81,35 @@ namespace Game
                 if (serveState)
                 {
                     Console.WriteLine("Choose a spot, then press W to send the ball.");
+                    while (serveState)
+                    {
+                        gameBoard.DrawBoard();
+                        ConsoleKeyInfo playerMove = Console.ReadKey();
+                        if (playerMove.Key == ConsoleKey.W)
+                        {
+                            gameBoard.Launch();
+                            serveState= false;
+                        }
+                        else if (playerMove.Key == ConsoleKey.A)
+                        {
+                            gameBoard.Move(-1);
+                        }
+                        else if (playerMove.Key == ConsoleKey.D)
+                        {
+                            gameBoard.Move(1);
+                        }
+                        else
+                        {
+                            gameBoard.Move(0);
+                        }
+                    }
+
                 }
                 gameBoard.DrawBoard();
-                Thread.Sleep(400);
+                Thread.Sleep(200);
                 if (Console.KeyAvailable){
                     ConsoleKeyInfo playerMove = Console.ReadKey();
-                    if (playerMove.Key == ConsoleKey.W){
-                        gameBoard.Launch();
-                    }
-                    else if (playerMove.Key == ConsoleKey.A){
+                    if (playerMove.Key == ConsoleKey.A){
                         gameBoard.Move(-1);
                     }else if (playerMove.Key == ConsoleKey.D){
                         gameBoard.Move(1);
@@ -115,6 +135,7 @@ namespace Game
                     default:
                         break;
                 }
+                Console.Clear();
 
 
             }
