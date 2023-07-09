@@ -11,59 +11,53 @@ namespace Game
 
     public class GameHandler
     {
+        static int size = 25;
 
         int livesLeft;
         bool gameOver;
         bool serveState;
-        int mapLevel;
-        BoardHandler? gameBoard = new BoardHandler(10, 10);
+        int mapStyle;
+        int difficulty;
+        BoardHandler gameBoard = new BoardHandler(0, 0, 0);
 
-        public GameHandler()
+        public GameHandler(int level)
         {
             livesLeft = 3;
             gameOver = false;
             serveState = true;
-            mapLevel = 0;
+            mapStyle = 0;
+            difficulty = level;
         }
-
-        private void LifeLost()
-        {
-            livesLeft -= 1;
-            if (livesLeft == 0)
-            {
-                gameOver = true;
-
-            }
-        }
-
-
-
         private void Setup()
         {
             
             Console.WriteLine("Welcome to BlockBreaker");
             Console.WriteLine("(press any key to continue...)");
             Console.ReadKey();
-            Console.WriteLine("Break the blocks to win! Move the bouncer with A and D to bounce the ball.");
+            Console.WriteLine("\nBreak the blocks to win! Move the bouncer with A and D to bounce the ball.");
+            Console.WriteLine("Type X to exit");
             Console.WriteLine("(press any key to continue...)");
             Console.ReadKey();
-            Console.WriteLine("You have 3 lives.");
+            Console.WriteLine("\nYou have 3 lives.");
 
             // Player chooses a preset map
             Console.WriteLine("Select map: (1-5)");
-            string mapSelect = Console.ReadLine();
-            int.TryParse(mapSelect, out mapLevel);
-            while (mapLevel < 1 | mapLevel > 5)
+            var mapSelect = Console.ReadLine();
+            int.TryParse(mapSelect, out mapStyle);
+            while (mapStyle < 1 | mapStyle > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
                 mapSelect = Console.ReadLine();
-                int.TryParse(mapSelect, out mapLevel);
+                int.TryParse(mapSelect, out mapStyle);
             }
 
-            Console.WriteLine("Selected map: {0}", mapLevel);
-            
-            gameBoard.BuildBoard(mapLevel);
+            Console.WriteLine("Selected map: {0}", mapStyle);
+
+            // Initialize the GameBoard
+            gameBoard = new BoardHandler(size, size, difficulty);
+            gameBoard.BuildBoard(mapStyle);
+
             Console.WriteLine("Press any key to begin");
             Console.ReadKey();
             serveState = true;
@@ -83,41 +77,51 @@ namespace Game
                     Console.WriteLine("Choose a spot, then press W to send the ball.");
                     while (serveState)
                     {
+                        gameBoard.Move(0);
                         gameBoard.DrawBoard();
                         ConsoleKeyInfo playerMove = Console.ReadKey();
-                        if (playerMove.Key == ConsoleKey.W)
+                        switch (playerMove.Key)
                         {
-                            gameBoard.Launch();
-                            serveState= false;
-                        }
-                        else if (playerMove.Key == ConsoleKey.A)
-                        {
-                            gameBoard.Move(-1);
-                        }
-                        else if (playerMove.Key == ConsoleKey.D)
-                        {
-                            gameBoard.Move(1);
-                        }
-                        else
-                        {
-                            gameBoard.Move(0);
+                            case ConsoleKey.W:
+                                gameBoard.Launch();
+                                serveState = false;
+                                break;
+                            case ConsoleKey.X:
+                                gameOver = true;
+                                break;
+                            case ConsoleKey.A:
+                                gameBoard.Move(-1);
+                                break;
+                            case ConsoleKey.D:
+                                gameBoard.Move(1);
+                                break;
+                            default:
+                                gameBoard.Move(0);
+                                break;
                         }
                     }
 
                 }
                 gameBoard.DrawBoard();
                 Thread.Sleep(200);
-                if (Console.KeyAvailable){
-                    ConsoleKeyInfo playerMove = Console.ReadKey();
-                    if (playerMove.Key == ConsoleKey.A){
-                        gameBoard.Move(-1);
-                    }else if (playerMove.Key == ConsoleKey.D){
-                        gameBoard.Move(1);
-                    }else{
-                        gameBoard.Move(0);
-                    }
-                    
-                }else{
+                if (Console.KeyAvailable)
+                {
+                        ConsoleKeyInfo playerMove = Console.ReadKey();
+                        switch (playerMove.Key)
+                        {
+                            case ConsoleKey.A:
+                                gameBoard.Move(-1);
+                                break;
+                            case ConsoleKey.D:
+                                gameBoard.Move(1);
+                                break;
+                            default:
+                                gameBoard.Move(0);
+                                break;
+                        }
+                }
+                else
+                {
                     gameBoard.Move(0);
                 }
 
@@ -125,20 +129,50 @@ namespace Game
                 {
                     case Status.Dead:
                         LifeLost();
-                        gameBoard.Reset();
                         break;
                     case Status.Victory:
-                        gameOver = true;
+                        Victory();
                         break;
                     case Status.Alive:
                         break;
                     default:
                         break;
                 }
-                Console.Clear();
+                //Console.Clear();
 
 
             }
+            Console.WriteLine("The Game is over");
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Subtract 1 from the number of lives, and write a
+        /// message to the console about how many lives remain.
+        /// Then, return to serve state.
+        /// If no lives remain, the game ends.
+        /// </summary>
+        private void LifeLost()
+        {
+            livesLeft -= 1;
+            if (livesLeft == 0)
+            {
+                gameOver = true;
+                Console.WriteLine("You ran out of Lives!");
+            }
+            else
+            {
+                Console.WriteLine("You lost a life!");
+                Console.WriteLine("{0} lives remain.", livesLeft);
+                gameBoard.Reset();
+                serveState = true;
+            }
+            return;
+        }
+
+        private void Victory()
+        {
+            Console.WriteLine("You win!");
         }
     }
 }

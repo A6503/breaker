@@ -1,15 +1,18 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Formats.Asn1;
 using System.Linq;
 
 namespace Game
 {
-    public enum BoardObjectRepresentation
+    public enum BoardTile
     {
-        X = -1, // Wall
-        O = -2, // Ball
-        d = -3, // Bouncer left
-        T = -4, // Bouncer middle
-        b = -5 // Bouncer right
+        Empty = 0, // Air
+        Wall = -1, // Wall
+        Ball = -2, // Ball
+        BouncerLeft = -3, // Bouncer left
+        BouncerCenter = -4, // Bouncer middle
+        BouncerRight = -5 // Bouncer right
 
     }
 
@@ -22,21 +25,29 @@ namespace Game
 
     public class BoardHandler
     {
+        // Board information
         int[,] layout;
         int boardWidth;
         int boardHeight;
         int totalBlocks = 0;
+
+        //Current state of the game board
+        int difficultyLevel = 1;
         int gameState = 0;
+        int score = 0;
+
+        // Location of interactables
         int bouncerLocation;
         int[] ballLocation;
         int[] ballDirection;
+        int ballTime;
 
-        static int[] frozen = new int[2] { 0, 0 };
-        public BoardHandler(int width, int height)
+        public BoardHandler(int width, int height, int difficulty)
         {
             layout = new int[width, height];
             boardWidth = width;
             boardHeight = height;
+            difficultyLevel = difficulty;
             for (int w = 0; w < width; w++)
             {
                 layout[w, 0] = -1;
@@ -51,33 +62,87 @@ namespace Game
             }
             bouncerLocation = width / 2;
             ballLocation = new int[2] { width / 2, height - 2 };
-            ballDirection = frozen;
+            ballDirection = new int[2] { 0, 0 };
 
         }
 
         public void BuildBoard(int map)
         {
-            UpdateBoard();
+            IMapBuilder builder;
+            switch (map)
+            {
+                case 1:
+                    builder = new Map1();
+                    break;
+                case 2:
+                    builder = new Map2();
+                    break;
+                case 3:
+                    builder = new Map3();
+                    break;
+                case 4:
+                    builder = new Map4();
+                    break;
+                case 5:
+                    builder = new Map5();
+                    break;
+                default:
+                    return;
+            }
+
+            int areawidth = boardWidth - 2;
+            int areaheight = boardHeight - 4;
+            builder.ObserveSize(areawidth, areaheight);
+
+            for (int h = 1; h < boardHeight - 3; h++)
+            {
+                for (int w = 1; w < boardWidth - 1; w++)
+                {
+                    layout[w,h] = builder.PlaceBlock(difficultyLevel);
+                }
+            }
+            totalBlocks = builder.GetBlocks();
             return;
         }
 
         public void DrawBoard()
         {
-            Console.WriteLine();
-
-            Console.WriteLine();
+            
+            for (int lines = 0; lines < 1; lines++)
+            {
+                Console.WriteLine(lines);
+            }
+            Console.WriteLine("SCORE: {0}", score);
             for (int h = 0; h < boardHeight; h++)
             {
                 for (int w = 0; w < boardWidth; w++)
                 {
-                    if (Enum.IsDefined(typeof(BoardObjectRepresentation), layout[w, h]))
+                    switch ((BoardTile)layout[w, h])
                     {
-                        Console.Write("({0})", (BoardObjectRepresentation)layout[w, h]);
-                    }
-                    else
-                    {
-                        Console.Write(" {0} ", layout[w, h]);
-                    }
+                        case BoardTile.Empty:
+                            Console.Write("   ");
+                            break;
+                        case BoardTile.Wall:
+                            Console.Write("[X]");
+                            break;
+                        case BoardTile.Ball:
+                            Console.Write("(O)");
+                            break;
+                        case BoardTile.BouncerLeft:
+                            Console.Write(" /T");
+                            break;
+                        case BoardTile.BouncerRight:
+                            Console.Write("T\\ ");
+                            break;
+
+                        case BoardTile.BouncerCenter:
+                            Console.Write("TTT");
+                            break;
+
+                        default:
+                            Console.Write("[{0}]", layout[w, h]);
+                            break;
+                     }
                 }
                 Console.Write("\n");
             }
@@ -89,7 +154,7 @@ namespace Game
             BallMovement();
             layout[ballLocation[0], ballLocation[1]] = 0;
 
-            if (ballDirection == frozen) // Ball is on Bouncer
+            if (ballDirection == new int[2] { 0, 0 }) // Ball is on Bouncer
             {
                 ballLocation[0] = bouncerLocation;
             }
@@ -138,9 +203,10 @@ namespace Game
 
         public int Launch()
         {
-            if (ballDirection == frozen)
+            if (ballDirection == new int[2] { 0, 0 })
             {
                 ballDirection = new int[] { 0, -1 };
+                ballTime = 0;
                 return 0;
             }
             return -1;
@@ -148,60 +214,35 @@ namespace Game
 
         private int BallMovement()
         {
-            if(ballDirection == frozen)
+            int xpos = ballLocation[0];
+            int ypos = ballLocation[1];
+            int xvel = ballDirection[0];
+            int yvel = ballDirection[1];
+
+            if (ypos == boardHeight - 2)
             {
+                
+                switch (layout[xpos, ypos + 1])
+                {
+                    default:
+                        gameState = 1;
+                        return 0;
+                        //break;
+                }
+            }
+            else
+            {
+                
                 return 0;
             }
 
-            if (layout[ballLocation[0] + ballDirection[0], ballLocation[1]] < 0) // Check boundary to the side
-            {
-                ballDirection[0] *= -1;
-            }
-            else if (layout[ballLocation[0] + ballDirection[0], ballLocation[1]] > 0) // Check breakable to the side
-            {
-                totalBlocks -= 1;
-                layout[ballLocation[0] + ballDirection[0], ballLocation[1]] -= 1;
-                ballDirection[0] *= -1;
-            }
-            else if (layout[ballLocation[0] + ballDirection[0], ballLocation[1] + ballDirection[1]] > 0) // Check breakable to the corner
-            {
-                layout[ballLocation[0] + ballDirection[0], ballLocation[1] + ballDirection[1]] -= 1;
-                ballDirection[0] *= -1;
-                ballDirection[1] *= -1;
-            }
-
-            if (layout[ballLocation[0], ballLocation[1] - 1] < 0) // Check boundary to the top
-            {
-                ballDirection[1] *= -1;
-            }
-            else if (layout[ballLocation[0], ballLocation[1] + ballDirection[1]] > 0) // Check breakable to the top/bottom
-            {
-                totalBlocks -= 1;
-                layout[ballLocation[0] + ballDirection[0], ballLocation[1]] -= 1;
-                ballDirection[1] *= -1;
-            }
-
-            if (layout[ballLocation[0], ballLocation[1] + 1] < 0) // Check for the bouncer
-            {
-                if (layout[ballLocation[0], ballLocation[1] + 1] == -3) // Bouncer Left
-                {
-                    ballDirection = new int[] { -1, -1 };
-                } else if (layout[ballLocation[0], ballLocation[1] + 1] == -4) // Bouncer Middle
-                {
-                    ballDirection = new int[] { 0, -1 };
-                } else if (layout[ballLocation[0], ballLocation[1] + 1] == -5) // Bouncer Right
-                {
-                    ballDirection = new int[] { 1, -1 };
-                }
-            }
-            return 0;
         }
 
         public int Reset()
         {
             bouncerLocation = boardWidth / 2;
             ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
-            ballDirection = frozen;
+            ballDirection = new int[2] { 0, 0 };
             gameState = 0;
             UpdateBoard();
             return 0;
@@ -209,6 +250,11 @@ namespace Game
 
         public Game.Status GetStatus(){
             return (Status)gameState;
+        }
+
+        public int GetScore()
+        {
+            return score;
         }
 
     }

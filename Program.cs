@@ -13,10 +13,24 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.WriteLine("HelloWorld");
-            GameHandler play = new GameHandler();
-            play.StartGame();
-            Console.WriteLine("Exiting... (any key to exit)");
-            Console.ReadKey();
+            int difficulty = 2;
+            bool quit = false;
+            while (!quit)
+            {
+                GameHandler play = new GameHandler(difficulty);
+                play.StartGame();
+                Console.WriteLine("Play again? (Y/N)");
+                ConsoleKeyInfo response = Console.ReadKey();
+                switch(response.Key)
+                {
+                    case ConsoleKey.Y:
+                        break;
+                    default:
+                        quit = true;
+                        break;
+                }
+            }
+
             return;
 
         }
