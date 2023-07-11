@@ -29,15 +29,15 @@ namespace Game
 
 
         // Board information
-        int[,] layout; // The layout of the board, represented as [x,y]
-        int boardWidth;
-        int boardHeight;
-        int totalBlocks = 0;
+        private int[,] layout; // The layout of the board, represented as [x,y]
+        private int boardWidth; // width of the layout
+        private int boardHeight; // height of the layout
+        private int totalBlocks = 0; // Total value of all the breakable blocks on the map
 
         //Current state of the game board
-        int difficultyLevel = 1;
-        int gameState = 0;
-        int score = 0;
+        private int difficultyLevel = 1; // Value that determines toughness of blocks
+        Status gameState = Status.Alive; // State of game
+        int score = 0; // Accumulated score
 
         // Bouncer
         int bouncerLocation; // The x position of the center of the Bouncer on the board
@@ -45,12 +45,13 @@ namespace Game
         // Ball details
         int[] ballLocation; // The location of the ball on the board
         bool movement = false; // Whether the ball is freely moving or not
-        bool yDirection = false; // Is the ball going down? False = going up
-        bool xDirection = false; // Is the ball going right? False = going left
-        private enum angle
+        int yDirection = 0; // Movement in y-axis
+        int xDirection = 0; // Movement in x-axis
+        private enum Angle
         {
-            LowAngle = 0, NormalAngle = 1, HighAngle = 2, // Higher angle means a steeper trajectory
+            None = -1, LowAngle = 0, NormalAngle = 1, HighAngle = 2, // Higher angle means a steeper trajectory, None means vertical movement
         }
+        Angle angle;
         int ballTime; // The time in updates the ball has been in movement
 
         public BoardHandler(int width, int height, int difficulty)
@@ -73,7 +74,7 @@ namespace Game
             }
             bouncerLocation = width / 2;
             ballLocation = new int[2] { width / 2, height - 2 };
-            ballDirection = stillState;
+            movement = false; yDirection = 0; xDirection = 0; angle = Angle.None; ballTime = 0;
 
         }
 
@@ -165,16 +166,43 @@ namespace Game
             CollisionCheck();
             layout[ballLocation[0], ballLocation[1]] = 0;
 
-            if (ballDirection == stillState) // Ball is on Bouncer
+            if (movement == false) // Ball is on Bouncer
             {
                 ballLocation[0] = bouncerLocation;
 
             }
             else // Ball is moving
             {
-                ballLocation[0] += ballDirection[0];
-                ballLocation[1] += ballDirection[1];
-                
+                switch (angle){
+                    case Angle.None:
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    case Angle.LowAngle:
+                        if (ballTime%2 == 1)
+                        {
+                            ballLocation[1] += yDirection;
+                        }
+                        ballLocation[0] += xDirection;
+                        break;
+
+                    case Angle.NormalAngle:
+                        ballLocation[0] += xDirection;
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    case Angle.HighAngle:
+                        if (ballTime % 2 == 1)
+                        {
+                            ballLocation[0] +=xDirection;
+                        }
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    default:
+                        break;
+                }
+                ballTime++;
             }
 
             layout[ballLocation[0], ballLocation[1]] = -2;
@@ -215,10 +243,10 @@ namespace Game
 
         public int Launch()
         {
-            if (ballDirection == stillState)
+            if (movement == false)
             {
-                ballDirection = new int[] { 0, -1 };
-                ballTime = 0;
+                yDirection = -1;
+                movement = true;
                 return 0;
             }
             return -1;
@@ -228,37 +256,29 @@ namespace Game
         {
             int xpos = ballLocation[0];
             int ypos = ballLocation[1];
-            int xvel = ballDirection[0];
-            int xdir;
-            if (xvel < 0) { xdir = -1; } else if (xvel > 0) { xdir = 1; } else { xdir = 0; }
-            int yvel = ballDirection[1];
 
             // Check if ball is at the bottom layer
             if (ypos == boardHeight - 2) 
             {
                 
-                switch (layout[xpos+xdir, ypos + 1])
+                switch (layout[xpos, ypos + 1])
                 {
                     case -3:
-                        ballLocation = new int[] { xpos - 1, ypos - 1 };
-                        ballDirection = new int[] { -1, -1 };
+                        yDirection = -1;
                         break;
                     case -4:
-                        ballLocation = new int[] { xpos+xvel, ypos - 1 };
                         ballDirection = new int[] { xvel, -1 };
                         break;
                     case -5:
-                        ballLocation = new int[] { xpos + 1, ypos - 1 };
                         ballDirection = new int[] { 1, -1 };
                         break;
                     case 0:
-                        ballLocation = new int[] { xpos + xdir, ypos + 1 };
                         DrawBoard();
-                        gameState = 1;
+                        gameState = Status.Dead;
                         return 0;
 
                     default:
-                        gameState = 1;
+                        gameState = Status.Dead;
                         return 0;
                         //break;
                 }
@@ -277,30 +297,27 @@ namespace Game
                 }
                 return 0;
             }
+            if (totalBlocks == 0)
+            {
+                gameState = Status.Victory;
+                return 0;
+            }
             return -1;
 
         }
 
-        private void MoveBall()
-        {
-            ballTime += 1;
-            int xMovement = ballDirection[0];
-            if (xMovement == 1)
-        }
 
         public int Reset()
         {
             bouncerLocation = boardWidth / 2;
             ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
-            ballDirection = stillState;
-            gameState = 0;
-            ballTime = 0;
+            movement = false; yDirection = 0; xDirection = 0; angle = Angle.None; ballTime = 0;
             UpdateBoard();
             return 0;
         }
 
-        public Game.Status GetStatus(){
-            return (Status)gameState;
+        public Status GetStatus(){
+            return gameState;
         }
 
         public int GetScore()
