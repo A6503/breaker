@@ -257,22 +257,27 @@ namespace Game
             int xpos = ballLocation[0];
             int ypos = ballLocation[1];
 
+            bool yFlip = false;
+            bool xFlip = false;
             // Check if ball is at the bottom layer
             if (ypos == boardHeight - 2) 
             {
                 
-                switch (layout[xpos, ypos + 1])
+                switch ((BoardTile)layout[xpos, ypos + 1])
                 {
-                    case -3:
+                    case BoardTile.BouncerLeft:
                         yDirection = -1;
-                        break;
-                    case -4:
-                        ballDirection = new int[] { xvel, -1 };
-                        break;
-                    case -5:
-                        ballDirection = new int[] { 1, -1 };
-                        break;
-                    case 0:
+                        xDirection = -1;
+                        return 0;
+                    case BoardTile.BouncerCenter:
+                        yDirection = -1;
+                        return 0;
+                    case BoardTile.BouncerRight:
+                        yDirection = -1;
+                        xDirection = 1;
+                        return 0;
+                    case BoardTile.Empty:
+                        ballLocation = new int[2] {xpos+xDirection, ypos+1};
                         DrawBoard();
                         gameState = Status.Dead;
                         return 0;
@@ -285,24 +290,43 @@ namespace Game
             }
             else
             {
-                switch (layout[xpos, ypos + yvel])
+                switch (layout[xpos + xDirection, ypos])
                 {
-                    case - 1:
-                        yvel *= -1;
+                    case -1:
+                        xFlip = true;
                         break;
                     default:
-                        yvel *= -1;
-                        layout[xpos, ypos + yvel] -= 1;
+                        layout[xpos + xDirection, ypos] -= 1;
+                        xFlip = true;
                         break;
                 }
-                return 0;
+                switch (layout[xpos, ypos + yDirection])
+                {
+                    case -1:
+                        yFlip = true;
+                        break;
+                    default:
+                        layout[xpos, ypos + yDirection] -= 1;
+                        yFlip = true;
+                        break;
+                }
+
+                switch (layout[xpos + xDirection, ypos + yDirection])
+                {
+                    case -1:
+                        xFlip = true; yFlip = true;
+                        break;
+                    default:
+                        layout[xpos + xDirection, ypos + yDirection] -= 1;
+                        xFlip = true; yFlip = true;
+                        break;
+                }
             }
-            if (totalBlocks == 0)
-            {
-                gameState = Status.Victory;
-                return 0;
-            }
-            return -1;
+
+            if (xFlip) { xDirection *= -1; }
+            if (yFlip) { yDirection *= -1; }
+            if (totalBlocks == 0){ gameState = Status.Victory; }
+            return 0;
 
         }
 
