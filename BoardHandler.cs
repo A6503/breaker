@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Formats.Asn1;
 using System.Linq;
+using System.Xml;
 
 namespace Game
 {
@@ -25,8 +26,10 @@ namespace Game
 
     public class BoardHandler
     {
+
+
         // Board information
-        int[,] layout;
+        int[,] layout; // The layout of the board, represented as [x,y]
         int boardWidth;
         int boardHeight;
         int totalBlocks = 0;
@@ -36,11 +39,19 @@ namespace Game
         int gameState = 0;
         int score = 0;
 
-        // Location of interactables
-        int bouncerLocation;
-        int[] ballLocation;
-        int[] ballDirection;
-        int ballTime;
+        // Bouncer
+        int bouncerLocation; // The x position of the center of the Bouncer on the board
+
+        // Ball details
+        int[] ballLocation; // The location of the ball on the board
+        bool movement = false; // Whether the ball is freely moving or not
+        bool yDirection = false; // Is the ball going down? False = going up
+        bool xDirection = false; // Is the ball going right? False = going left
+        private enum angle
+        {
+            LowAngle = 0, NormalAngle = 1, HighAngle = 2, // Higher angle means a steeper trajectory
+        }
+        int ballTime; // The time in updates the ball has been in movement
 
         public BoardHandler(int width, int height, int difficulty)
         {
@@ -62,7 +73,7 @@ namespace Game
             }
             bouncerLocation = width / 2;
             ballLocation = new int[2] { width / 2, height - 2 };
-            ballDirection = new int[2] { 0, 0 };
+            ballDirection = stillState;
 
         }
 
@@ -151,12 +162,13 @@ namespace Game
         private int UpdateBoard()
         {
             // Move the Ball
-            BallMovement();
+            CollisionCheck();
             layout[ballLocation[0], ballLocation[1]] = 0;
 
-            if (ballDirection == new int[2] { 0, 0 }) // Ball is on Bouncer
+            if (ballDirection == stillState) // Ball is on Bouncer
             {
                 ballLocation[0] = bouncerLocation;
+
             }
             else // Ball is moving
             {
@@ -203,7 +215,7 @@ namespace Game
 
         public int Launch()
         {
-            if (ballDirection == new int[2] { 0, 0 })
+            if (ballDirection == stillState)
             {
                 ballDirection = new int[] { 0, -1 };
                 ballTime = 0;
@@ -212,18 +224,39 @@ namespace Game
             return -1;
         }
 
-        private int BallMovement()
+        private int CollisionCheck()
         {
             int xpos = ballLocation[0];
             int ypos = ballLocation[1];
             int xvel = ballDirection[0];
+            int xdir;
+            if (xvel < 0) { xdir = -1; } else if (xvel > 0) { xdir = 1; } else { xdir = 0; }
             int yvel = ballDirection[1];
 
-            if (ypos == boardHeight - 2)
+            // Check if ball is at the bottom layer
+            if (ypos == boardHeight - 2) 
             {
                 
-                switch (layout[xpos, ypos + 1])
+                switch (layout[xpos+xdir, ypos + 1])
                 {
+                    case -3:
+                        ballLocation = new int[] { xpos - 1, ypos - 1 };
+                        ballDirection = new int[] { -1, -1 };
+                        break;
+                    case -4:
+                        ballLocation = new int[] { xpos+xvel, ypos - 1 };
+                        ballDirection = new int[] { xvel, -1 };
+                        break;
+                    case -5:
+                        ballLocation = new int[] { xpos + 1, ypos - 1 };
+                        ballDirection = new int[] { 1, -1 };
+                        break;
+                    case 0:
+                        ballLocation = new int[] { xpos + xdir, ypos + 1 };
+                        DrawBoard();
+                        gameState = 1;
+                        return 0;
+
                     default:
                         gameState = 1;
                         return 0;
@@ -232,18 +265,36 @@ namespace Game
             }
             else
             {
-                
+                switch (layout[xpos, ypos + yvel])
+                {
+                    case - 1:
+                        yvel *= -1;
+                        break;
+                    default:
+                        yvel *= -1;
+                        layout[xpos, ypos + yvel] -= 1;
+                        break;
+                }
                 return 0;
             }
+            return -1;
 
+        }
+
+        private void MoveBall()
+        {
+            ballTime += 1;
+            int xMovement = ballDirection[0];
+            if (xMovement == 1)
         }
 
         public int Reset()
         {
             bouncerLocation = boardWidth / 2;
             ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
-            ballDirection = new int[2] { 0, 0 };
+            ballDirection = stillState;
             gameState = 0;
+            ballTime = 0;
             UpdateBoard();
             return 0;
         }

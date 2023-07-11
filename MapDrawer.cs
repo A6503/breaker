@@ -8,14 +8,19 @@ interface IMapBuilder
 	/// Returns the value of the block.
 	/// </summary>
 	int PlaceBlock(int difficulty);
+
 	/// <summary>
-	/// Allows the MapDrawer object to know the width and height of
+	/// Provides the MapBuilder with the width and height of
 	/// the area in which blocks can be placed. NOT the actual 
 	/// size of the Board.
 	/// </summary>
 	/// <param name="width"">Width of the placeable area.</param>
 	/// <param name="height">Height of the placeable area.</param>
 	void ObserveSize(int width, int height);
+
+    /// <summary>
+    /// Returns the sum of the values of the placed blocks (it takes x bounces to destroy a block with a value of x)
+    /// </summary>
 	int GetBlocks();
 }
 public class Map1 : IMapBuilder

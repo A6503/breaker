@@ -11,14 +11,15 @@ namespace Game
 
     public class GameHandler
     {
-        static int size = 25;
+        static int size = 25; // Width and height to build the board
 
-        int livesLeft;
-        bool gameOver;
-        bool serveState;
-        int mapStyle;
-        int difficulty;
-        BoardHandler gameBoard = new BoardHandler(0, 0, 0);
+        int livesLeft; // How many lives remaining
+        bool gameOver; // If true, end the game
+        bool serveState; // If true, the ball does not move, and the console waits for player input
+        int mapStyle; // Which map to draw
+        int difficulty; // The higher the value, the harder it is to break the blocks
+
+        BoardHandler gameBoard = new BoardHandler(0, 0, 0); // The gameBoard object representing the board
 
         public GameHandler(int level)
         {
@@ -102,6 +103,7 @@ namespace Game
                     }
 
                 }
+
                 gameBoard.DrawBoard();
                 Thread.Sleep(200);
                 if (Console.KeyAvailable)
@@ -138,7 +140,7 @@ namespace Game
                     default:
                         break;
                 }
-                //Console.Clear();
+                Console.Clear();
 
 
             }
