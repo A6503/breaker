@@ -21,6 +21,10 @@ namespace Game
 
         BoardHandler gameBoard = new BoardHandler(0, 0, 0); // The gameBoard object representing the board
 
+        /// <summary>
+        /// The GameHandler object uses the level parameter to determine the durability of the Blocks in the game.
+        /// </summary>
+        /// <param name="level"></param>
         public GameHandler(int level)
         {
             livesLeft = 3;
@@ -29,6 +33,10 @@ namespace Game
             mapStyle = 0;
             difficulty = level;
         }
+
+        /// <summary>
+        /// Provides instructions for the player and creates a new BoardHandler depending on the option selected.
+        /// </summary>
         private void Setup()
         {
             
@@ -65,6 +73,10 @@ namespace Game
 
         }
 
+        /// <summary>
+        /// Starts the game for the player. Loops through gameplay until the gameOver state is reached 
+        /// by any means.
+        /// </summary>
         public void StartGame()
         {
             // Prepare the Board
@@ -75,16 +87,19 @@ namespace Game
             {
                 if (serveState)
                 {
+                    
                     Console.WriteLine("Choose a spot, then press W to send the ball.");
+                    gameBoard.Move(0);
+                    gameBoard.DrawBoard();
                     while (serveState)
                     {
-                        gameBoard.Move(0);
-                        gameBoard.DrawBoard();
+
                         ConsoleKeyInfo playerMove = Console.ReadKey();
                         switch (playerMove.Key)
                         {
                             case ConsoleKey.W:
                                 gameBoard.Launch();
+                                gameBoard.DrawBoard();
                                 serveState = false;
                                 break;
                             case ConsoleKey.X:
@@ -92,12 +107,13 @@ namespace Game
                                 break;
                             case ConsoleKey.A:
                                 gameBoard.Move(-1);
+                                gameBoard.DrawBoard();
                                 break;
                             case ConsoleKey.D:
                                 gameBoard.Move(1);
+                                gameBoard.DrawBoard();
                                 break;
                             default:
-                                gameBoard.Move(0);
                                 break;
                         }
                     }
@@ -176,9 +192,15 @@ namespace Game
             return;
         }
 
+        /// <summary>
+        /// Ends the game with a Victory message.
+        /// </summary>
         private void Victory()
         {
             Console.WriteLine("You win!");
+            int score = gameBoard.GetScore();
+            Console.WriteLine("Your final score was {0}", score);
+            gameOver = true;
         }
     }
 }
