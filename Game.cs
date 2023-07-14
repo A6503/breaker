@@ -11,7 +11,7 @@ namespace Game
 
     public class GameHandler
     {
-        static int size = 25; // Width and height to build the board
+        static int size = 10; // Width and height to build the board
 
         int livesLeft; // How many lives remaining
         bool gameOver; // If true, end the game
@@ -45,7 +45,7 @@ namespace Game
             Console.WriteLine("Select map: (1-5)");
             var mapSelect = Console.ReadLine();
             int.TryParse(mapSelect, out mapStyle);
-            while (mapStyle < 1 | mapStyle > 5)
+            while (mapStyle < 0 | mapStyle > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
@@ -105,27 +105,30 @@ namespace Game
                 }
 
                 gameBoard.DrawBoard();
-                Thread.Sleep(200);
+                // Wait for the player to input, then update.
+                Thread.Sleep(200); 
                 if (Console.KeyAvailable)
                 {
-                        ConsoleKeyInfo playerMove = Console.ReadKey();
-                        switch (playerMove.Key)
-                        {
-                            case ConsoleKey.A:
-                                gameBoard.Move(-1);
-                                break;
-                            case ConsoleKey.D:
-                                gameBoard.Move(1);
-                                break;
-                            default:
-                                gameBoard.Move(0);
-                                break;
-                        }
+                    ConsoleKeyInfo playerMove = Console.ReadKey();
+                    switch (playerMove.Key)
+                    {
+                        case ConsoleKey.A:
+                            gameBoard.Move(-1);
+                            break;
+                        case ConsoleKey.D:
+                            gameBoard.Move(1);
+                            break;
+                        default:
+                            gameBoard.Move(0);
+                            break;
+                    }
                 }
                 else
                 {
                     gameBoard.Move(0);
                 }
+
+
 
                 switch (gameBoard.GetStatus())
                 {
@@ -140,7 +143,7 @@ namespace Game
                     default:
                         break;
                 }
-                Console.Clear();
+                //Console.Clear();
 
 
             }
@@ -166,6 +169,7 @@ namespace Game
             {
                 Console.WriteLine("You lost a life!");
                 Console.WriteLine("{0} lives remain.", livesLeft);
+                Console.ReadKey();
                 gameBoard.Reset();
                 serveState = true;
             }

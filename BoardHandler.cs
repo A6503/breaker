@@ -13,7 +13,8 @@ namespace Game
         Ball = -2, // Ball
         BouncerLeft = -3, // Bouncer left
         BouncerCenter = -4, // Bouncer middle
-        BouncerRight = -5 // Bouncer right
+        BouncerRight = -5, // Bouncer right
+        Poof = -6 // Destruction particle
 
     }
 
@@ -49,9 +50,9 @@ namespace Game
         int xDirection = 0; // Movement in x-axis
         private enum Angle
         {
-            None = -1, LowAngle = 0, NormalAngle = 1, HighAngle = 2, // Higher angle means a steeper trajectory, None means vertical movement
+            None = 0, LowAngle = 1, NormalAngle = 2, HighAngle = 3, // Higher angle means a steeper trajectory, None for vertical movement
         }
-        Angle angle;
+        Angle ballAngle;
         int ballTime; // The time in updates the ball has been in movement
 
         public BoardHandler(int width, int height, int difficulty)
@@ -72,9 +73,9 @@ namespace Game
                 }
 
             }
-            bouncerLocation = width / 2;
-            ballLocation = new int[2] { width / 2, height - 2 };
-            movement = false; yDirection = 0; xDirection = 0; angle = Angle.None; ballTime = 0;
+            bouncerLocation = boardWidth / 2;
+            ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
+            movement = false; yDirection = 0; xDirection = 0; ballAngle = Angle.None; ballTime = 0;
 
         }
 
@@ -103,7 +104,7 @@ namespace Game
             }
 
             int areawidth = boardWidth - 2;
-            int areaheight = boardHeight - 4;
+            int areaheight = boardHeight - 5;
             builder.ObserveSize(areawidth, areaheight);
 
             for (int h = 1; h < boardHeight - 3; h++)
@@ -122,7 +123,7 @@ namespace Game
             
             for (int lines = 0; lines < 1; lines++)
             {
-                Console.WriteLine(lines);
+                Console.WriteLine("\n");
             }
             Console.WriteLine("SCORE: {0}", score);
             for (int h = 0; h < boardHeight; h++)
@@ -143,14 +144,16 @@ namespace Game
                         case BoardTile.BouncerLeft:
                             Console.Write(" /T");
                             break;
-                        case BoardTile.BouncerRight:
-                            Console.Write("T\\ ");
-                            break;
 
                         case BoardTile.BouncerCenter:
                             Console.Write("TTT");
                             break;
-
+                        case BoardTile.BouncerRight:
+                            Console.Write("T\\ ");
+                            break;
+                        case BoardTile.Poof:
+                            Console.Write("###");
+                            break;
                         default:
                             Console.Write("[{0}]", layout[w, h]);
                             break;
@@ -162,49 +165,21 @@ namespace Game
 
         private int UpdateBoard()
         {
+            
             // Move the Ball
-            CollisionCheck();
+            
             layout[ballLocation[0], ballLocation[1]] = 0;
 
             if (movement == false) // Ball is on Bouncer
             {
                 ballLocation[0] = bouncerLocation;
-
+                ballLocation[1] = boardHeight - 2;
             }
             else // Ball is moving
             {
-                switch (angle){
-                    case Angle.None:
-                        ballLocation[1] += yDirection;
-                        break;
-
-                    case Angle.LowAngle:
-                        if (ballTime%2 == 1)
-                        {
-                            ballLocation[1] += yDirection;
-                        }
-                        ballLocation[0] += xDirection;
-                        break;
-
-                    case Angle.NormalAngle:
-                        ballLocation[0] += xDirection;
-                        ballLocation[1] += yDirection;
-                        break;
-
-                    case Angle.HighAngle:
-                        if (ballTime % 2 == 1)
-                        {
-                            ballLocation[0] +=xDirection;
-                        }
-                        ballLocation[1] += yDirection;
-                        break;
-
-                    default:
-                        break;
-                }
-                ballTime++;
+                BallPhysics();
             }
-
+            // Set updated Ball position
             layout[ballLocation[0], ballLocation[1]] = -2;
 
 
@@ -216,7 +191,7 @@ namespace Game
             layout[bouncerLocation - 1, boardHeight - 1] = -3;
             layout[bouncerLocation, boardHeight - 1] = -4;
             layout[bouncerLocation + 1, boardHeight - 1] = -5;
-            if (bouncerLocation < boardHeight - 2)
+            if (bouncerLocation < boardWidth - 2)
             {
                 layout[bouncerLocation + 2, boardHeight - 1] = 0;
             }
@@ -245,14 +220,17 @@ namespace Game
         {
             if (movement == false)
             {
+                ballLocation[1] = boardHeight - 3;
+                layout[ballLocation[0], boardHeight - 2] = 0;
                 yDirection = -1;
+                xDirection = 0;
                 movement = true;
                 return 0;
             }
-            return -1;
+            return 0;
         }
 
-        private int CollisionCheck()
+        private int BallPhysics()
         {
             int xpos = ballLocation[0];
             int ypos = ballLocation[1];
@@ -262,23 +240,24 @@ namespace Game
             // Check if ball is at the bottom layer
             if (ypos == boardHeight - 2) 
             {
-                
                 switch ((BoardTile)layout[xpos, ypos + 1])
                 {
                     case BoardTile.BouncerLeft:
                         yDirection = -1;
                         xDirection = -1;
-                        return 0;
+                        ballAngle = Angle.NormalAngle;
+                        break;
                     case BoardTile.BouncerCenter:
                         yDirection = -1;
-                        return 0;
+                        ballAngle = Angle.None;
+                        break;
                     case BoardTile.BouncerRight:
                         yDirection = -1;
                         xDirection = 1;
-                        return 0;
+                        ballAngle = Angle.NormalAngle;
+                        break;
                     case BoardTile.Empty:
-                        ballLocation = new int[2] {xpos+xDirection, ypos+1};
-                        DrawBoard();
+                        Death();
                         gameState = Status.Dead;
                         return 0;
 
@@ -290,52 +269,103 @@ namespace Game
             }
             else
             {
-                switch (layout[xpos + xDirection, ypos])
+                if (layout[xpos + xDirection, ypos] != 0 | layout[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
                 {
-                    case -1:
+                    if (layout[xpos + xDirection, ypos] == -1) // Check right/left
+                    {
                         xFlip = true;
-                        break;
-                    default:
+                    }
+                    else if (layout[xpos + xDirection, ypos] > 0)
+                    {
                         layout[xpos + xDirection, ypos] -= 1;
                         xFlip = true;
-                        break;
-                }
-                switch (layout[xpos, ypos + yDirection])
-                {
-                    case -1:
+                    }
+                    if (layout[xpos, ypos + yDirection] == -1) // Check up/down
+                    {
                         yFlip = true;
-                        break;
-                    default:
+                    }
+                    else if (layout[xpos, ypos + yDirection] > 0)
+                    {
                         layout[xpos, ypos + yDirection] -= 1;
                         yFlip = true;
-                        break;
+                    }
                 }
-
-                switch (layout[xpos + xDirection, ypos + yDirection])
+                else if (layout[xpos + xDirection, ypos + yDirection] > 0)
                 {
-                    case -1:
-                        xFlip = true; yFlip = true;
-                        break;
-                    default:
-                        layout[xpos + xDirection, ypos + yDirection] -= 1;
-                        xFlip = true; yFlip = true;
-                        break;
+                    layout[xpos + xDirection, ypos + yDirection] -= 1;
+                    xFlip = true; yFlip = true;
                 }
             }
-
             if (xFlip) { xDirection *= -1; }
             if (yFlip) { yDirection *= -1; }
-            if (totalBlocks == 0){ gameState = Status.Victory; }
+
+            if (totalBlocks == -1) { gameState = Status.Victory; }
+            else 
+            {
+                // Move the ball
+                switch (ballAngle)
+                {
+                    case Angle.None:
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    case Angle.LowAngle:
+                        if (ballTime % 2 == 1)
+                        {
+                            ballLocation[1] += yDirection;
+                        }
+                        ballLocation[0] += xDirection;
+                        break;
+
+                    case Angle.NormalAngle:
+                        ballLocation[0] += xDirection;
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    case Angle.HighAngle:
+                        if (ballTime % 2 == 1)
+                        {
+                            ballLocation[0] += xDirection;
+                        }
+                        ballLocation[1] += yDirection;
+                        break;
+
+                    default:
+                        break;
+                }
+                ballTime++;
+            }
             return 0;
 
+        }
+
+        private void Death()
+        {
+            layout[ballLocation[0], ballLocation[1]] = -6;
+            layout[ballLocation[0], ballLocation[1] - 1] = -6;
+            layout[ballLocation[0], ballLocation[1] + 1] = -6;
+            layout[ballLocation[0] - 1, ballLocation[1] + 1] = -6;
+            layout[ballLocation[0] + 1, ballLocation[1] + 1] = -6;
+            DrawBoard();
         }
 
 
         public int Reset()
         {
+            gameState = Status.Alive;
             bouncerLocation = boardWidth / 2;
             ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
-            movement = false; yDirection = 0; xDirection = 0; angle = Angle.None; ballTime = 0;
+            movement = false; yDirection = 0; xDirection = 0; ballAngle = Angle.None; ballTime = 0;
+            for (int w = 0; w < boardWidth; w++)
+            {
+                for (int h = 0; h < boardHeight; h++)
+                {
+                    if (layout[w, h] < -1)
+                    {
+                        layout[w, h] = 0;
+                    }
+                }
+            }
             UpdateBoard();
             return 0;
         }
