@@ -17,7 +17,7 @@ namespace ConsoleApp1
             bool quit = false;
             while (!quit)
             {
-                GameHandler play = new GameHandler(difficulty);
+                Game.Game play = new Game.Game(difficulty);
                 play.StartGame();
                 Console.WriteLine("Play again? (Y/N)");
                 ConsoleKeyInfo response = Console.ReadKey();

@@ -22,7 +22,8 @@ namespace Game
     {
         Alive = 0,
         Dead = 1,
-        Victory = 2
+        Victory = 2,
+        Debug = 3
     }
 
     public class BoardHandler
@@ -30,9 +31,9 @@ namespace Game
 
 
         // Board information
-        private int[,] layout; // The layout of the board, represented as [x,y]
-        private int boardWidth; // width of the layout
-        private int boardHeight; // height of the layout
+        private int[,] boardArray; // The layout of the board, represented as [x,y]
+        private int boardWidth; // width of the boardArray
+        private int boardHeight; // height of the boardArray
         private int totalBlocks = 0; // Total value of all the breakable blocks on the map
 
         //Current state of the game board
@@ -63,18 +64,18 @@ namespace Game
         /// <param name="difficulty"></param>
         public BoardHandler(int width, int height, int difficulty)
         {
-            layout = new int[width, height];
+            boardArray = new int[width, height];
             boardWidth = width;
             boardHeight = height;
             difficultyLevel = difficulty;
             for (int w = 0; w < width; w++)
             {
-                layout[w, 0] = -1;
+                boardArray[w, 0] = -1;
                 if (w == 0 | w == width - 1)
                 {
                     for (int h = 1; h < height - 1; h++)
                     {
-                        layout[w, h] = -1;
+                        boardArray[w, h] = -1;
                     }
                 }
 
@@ -123,7 +124,7 @@ namespace Game
             {
                 for (int w = 1; w < boardWidth - 1; w++)
                 {
-                    layout[w,h] = builder.PlaceBlock(difficultyLevel);
+                    boardArray[w,h] = builder.PlaceBlock(difficultyLevel);
                 }
             }
             totalBlocks = builder.GetBlocks();
@@ -145,7 +146,7 @@ namespace Game
             {
                 for (int w = 0; w < boardWidth; w++)
                 {
-                    switch ((BoardTile)layout[w, h])
+                    switch ((BoardTile)boardArray[w, h])
                     {
                         case BoardTile.Empty:
                             Console.Write("   ");
@@ -167,10 +168,10 @@ namespace Game
                             Console.Write("\\\\\\");
                             break;
                         case BoardTile.Poof:
-                            Console.Write("###");
+                            Console.Write("RIP");
                             break;
                         default:
-                            Console.Write("[{0}]", layout[w, h]);
+                            Console.Write("[{0}]", boardArray[w, h]);
                             break;
                      }
                 }
@@ -188,7 +189,7 @@ namespace Game
             
             // Move the Ball
             
-            layout[ballLocation[0], ballLocation[1]] = 0;
+            boardArray[ballLocation[0], ballLocation[1]] = 0;
 
             if (movement == false) // Ball is on Bouncer
             {
@@ -200,21 +201,18 @@ namespace Game
                 BallPhysics();
             }
             // Set updated Ball position
-            layout[ballLocation[0], ballLocation[1]] = -2;
+            boardArray[ballLocation[0], ballLocation[1]] = -2;
 
 
             // Renew Bouncer location
-            if (bouncerLocation > 1)
+            for (int w = 0; w < boardWidth; w++)
             {
-                layout[bouncerLocation - 2, boardHeight - 1] = 0;
+                boardArray[w, boardHeight - 1] = 0;
             }
-            layout[bouncerLocation - 1, boardHeight - 1] = -3;
-            layout[bouncerLocation, boardHeight - 1] = -4;
-            layout[bouncerLocation + 1, boardHeight - 1] = -5;
-            if (bouncerLocation < boardWidth - 2)
-            {
-                layout[bouncerLocation + 2, boardHeight - 1] = 0;
-            }
+            boardArray[bouncerLocation - 1, boardHeight - 1] = -3;
+            boardArray[bouncerLocation, boardHeight - 1] = -4;
+            boardArray[bouncerLocation + 1, boardHeight - 1] = -5;
+
 
 
 
@@ -225,18 +223,19 @@ namespace Game
         /// Moves the Bouncer depending on the player's input. Then update the board.
         /// </summary>
         /// <param name="direction"></param>
-        /// <returns></returns>
+        /// <returns>Returns 0 if the move succeeded, or -1 if the bouncer cannot be moved in the selected direciton.</returns>
         public int Move(int direction)
         {
             if (bouncerLocation + direction > boardWidth - 2)
             {
                 return -1;
-            } else if (bouncerLocation + direction < 1)
+            } 
+            else if (bouncerLocation + direction < 1)
             {
                 return -1;
             }
-            bouncerLocation += direction;
 
+            bouncerLocation += direction;
             UpdateBoard();
             return 0;
         }
@@ -245,18 +244,16 @@ namespace Game
         /// If the ball is on the Bouncer, send it upwards. Otherwise do nothing.
         /// </summary>
         /// <returns></returns>
-        public int Launch()
+        public void Launch()
         {
             if (movement == false)
             {
                 ballLocation[1] = boardHeight - 3;
-                layout[ballLocation[0], boardHeight - 2] = 0;
+                boardArray[ballLocation[0], boardHeight - 2] = 0;
                 yDirection = -1;
                 xDirection = 0;
                 movement = true;
-                return 0;
             }
-            return 0;
         }
 
         /// <summary>
@@ -265,83 +262,121 @@ namespace Game
         /// Assumes that the Ball is in motion.
         /// </summary>
         /// <returns></returns>
-        private int BallPhysics()
+        private void BallPhysics()
         {
             int xpos = ballLocation[0];
             int ypos = ballLocation[1];
 
             bool yFlip = false;
             bool xFlip = false;
-            //
-            // If the ball is at the bottom then the Bouncer must be there to catch it
-            if (ypos == boardHeight - 2) 
+            int edgeBounce = 0;
+            Angle newAngle = ballAngle;
+            // If the ball is at the bottom then die
+            Console.WriteLine("{0}, {1}", newAngle, ballAngle);
+            if (ypos == boardHeight - 1) 
             {
-                switch ((BoardTile)layout[xpos, ypos + 1])
-                {
-                    case BoardTile.BouncerLeft:
-                        yFlip = true;
-                        xDirection = -1;
-                        ballAngle = Angle.NormalAngle;
-                        break;
-                    case BoardTile.BouncerCenter:
-                        yFlip = true;
-                        ballAngle = Angle.None;
-                        break;
-                    case BoardTile.BouncerRight:
-                        yFlip = true;
-                        xDirection = 1;
-                        ballAngle = Angle.NormalAngle;
-                        break;
-                    case BoardTile.Empty:
-                        Death();
-                        gameState = Status.Dead;
-                        return 0;
-
-                    default:
-                        gameState = Status.Dead;
-                        return 0;
-                        //break;
-                }
+                Death();
+                gameState = Status.Dead;
+                return;
             }
             else
             {
-                if (layout[xpos + xDirection, ypos] != 0 | layout[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
+                if (boardArray[xpos + xDirection, ypos] != 0 | boardArray[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
                 {
-                    if (layout[xpos + xDirection, ypos] == -1) // Check right/left
+                    // Check right/left side
+                    switch (boardArray[xpos + xDirection, ypos])
                     {
-                        xFlip = true;
+                        case (int)BoardTile.Wall:
+                            xFlip = true;
+                            break;
+
+                        case > 0:
+                            boardArray[xpos + xDirection, ypos] -= 1;
+                            score += 100;
+                            totalBlocks -= 1;
+                            xFlip = true;
+                            break;
+
+                        default:
+                            break;
                     }
-                    else if (layout[xpos + xDirection, ypos] > 0) // (Breakable)
+                    // Check up/down
+                    switch (boardArray[xpos, ypos + yDirection])
                     {
-                        layout[xpos + xDirection, ypos] -= 1;
-                        score += 100;
-                        totalBlocks -= 1;
-                        xFlip = true;
-                    }
-                    if (layout[xpos, ypos + yDirection] == -1) // Check up/down
-                    {
-                        yFlip = true;
-                    }
-                    else if (layout[xpos, ypos + yDirection] > 0) // (Breakable)
-                    {
-                        layout[xpos, ypos + yDirection] -= 1;
-                        score += 100;
-                        totalBlocks -= 1;
-                        yFlip = true;
+                        case (int)BoardTile.Wall:
+                            yFlip = true;
+                            break;
+
+                        case (int)BoardTile.BouncerLeft:
+                            yFlip = true;
+                            edgeBounce = -1;
+                            break;
+                        case (int)BoardTile.BouncerCenter:
+                            yFlip = true;
+                            break;
+                        case (int)BoardTile.BouncerRight:
+                            yFlip = true;
+                            edgeBounce = 1;
+                            break;
+
+                        case > 0:
+                            boardArray[xpos, ypos + yDirection] -= 1;
+                            score += 100;
+                            totalBlocks -= 1;
+                            yFlip = true;
+                            break;
+
+                        default:
+                            break;
+
                     }
                 }
-                else if (layout[xpos + xDirection, ypos + yDirection] > 0) // Adjacent tiles are clear, so check the corners.
-                                                                           // Note that this can't be the corner of the board, since 
-                                                                           // there is always an adjacent tile if the Ball is at the corner.
-                {
-                    layout[xpos + xDirection, ypos + yDirection] -= 1;
-                    score += 100;
-                    totalBlocks -= 1;
-                    xFlip = true; yFlip = true;
-                }
+                else if (boardArray[xpos + xDirection, ypos + yDirection] > 0)
+                    // Adjacent tiles are clear, so check the corners.
+                    // Note that this can't be the corner of the board, since 
+                    // there is always an adjacent tile if the Ball is at the corner.
+                    
+                    switch (boardArray[xpos + xDirection, ypos + yDirection])
+                    {
+                        case (int)BoardTile.BouncerLeft:
+                            yFlip = true;
+                            edgeBounce = -1;
+                            newAngle = (Angle)(((int)(Angle)ballAngle + 1) % 4); 
+
+                            break;
+                        case (int)BoardTile.BouncerCenter:
+                            yFlip = true;
+                            break;
+                        case (int)BoardTile.BouncerRight:
+                            yFlip = true;
+                            edgeBounce = 1;
+
+                            break;
+
+                        case > 0:
+                            boardArray[xpos + xDirection, ypos + yDirection] -= 1;
+                            score += 100;
+                            totalBlocks -= 1;
+                            yFlip = true;
+                            break;
+
+                        default:
+                            gameState = Status.Debug;
+                            return;
+
+                    }
+            }
+            if (edgeBounce != 0) 
+            { 
+                xDirection = edgeBounce;
+                int prevAngleInt = (int)(Angle)ballAngle;
+                int newAngleInt = (prevAngleInt + 1) % 4;
+                newAngle = (Angle)newAngleInt;
             }
             if (xFlip) { xDirection *= -1; }
             if (yFlip) { yDirection *= -1; }
+            ballAngle = newAngle;
+            
 
             if (totalBlocks == 0) { gameState = Status.Victory; }
             else 
@@ -379,27 +414,17 @@ namespace Game
                 }
                 ballTime++;
             }
-            return 0;
-
         }
 
         /// <summary>
-        /// Provides a visual of the destruction of the Ball.
+        /// Provides a visual of the destruction of the Ball, then clears the leftover values.
         /// </summary>
         private void Death()
         {
-            layout[ballLocation[0], ballLocation[1]] = -6;
-            layout[ballLocation[0], ballLocation[1] - 1] = -6;
-            layout[ballLocation[0], ballLocation[1] + 1] = -6;
-            layout[ballLocation[0] - 1, ballLocation[1] + 1] = -6;
-            layout[ballLocation[0] + 1, ballLocation[1] + 1] = -6;
+
+            boardArray[ballLocation[0], ballLocation[1]] = -6;
             DrawBoard();
-            layout[ballLocation[0], ballLocation[1]] = 0;
-            layout[ballLocation[0], ballLocation[1] - 1] = 0;
-            layout[ballLocation[0], ballLocation[1] + 1] = 0;
-            layout[ballLocation[0] - 1, ballLocation[1] + 1] = 0;
-            layout[ballLocation[0] + 1, ballLocation[1] + 1] = 0;
-            DrawBoard();
+
         }
 
         /// <summary>
@@ -429,6 +454,15 @@ namespace Game
         public int GetScore()
         {
             return score;
+        }
+
+        /// <summary>
+        /// Inbuilt debugging
+        /// </summary>
+        public void DebugHelper()
+        {
+            DrawBoard();
+            Console.WriteLine("Bouncer: {0} \n Ball: ({1},{2}), x:{3} y:{4}", bouncerLocation, ballLocation[0], ballLocation[1], xDirection, yDirection);
         }
 
     }

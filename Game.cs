@@ -9,7 +9,7 @@ namespace Game
 {
 
 
-    public class GameHandler
+    public class Game
     {
         static int size = 10; // Width and height to build the board
 
@@ -22,10 +22,10 @@ namespace Game
         BoardHandler gameBoard = new BoardHandler(0, 0, 0); // The gameBoard object representing the board
 
         /// <summary>
-        /// The GameHandler object uses the level parameter to determine the durability of the Blocks in the game.
+        /// The Game object uses the level parameter to determine the durability of the Blocks in the game.
         /// </summary>
         /// <param name="level"></param>
-        public GameHandler(int level)
+        public Game(int level)
         {
             livesLeft = 3;
             gameOver = false;
@@ -53,7 +53,7 @@ namespace Game
             Console.WriteLine("Select map: (1-5)");
             var mapSelect = Console.ReadLine();
             int.TryParse(mapSelect, out mapStyle);
-            while (mapStyle < 0 | mapStyle > 5)
+            while (mapStyle < 1 | mapStyle > 5)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
@@ -134,6 +134,9 @@ namespace Game
                         case ConsoleKey.D:
                             gameBoard.Move(1);
                             break;
+                        case ConsoleKey.X:
+                            gameOver = true;
+                            break;
                         default:
                             gameBoard.Move(0);
                             break;
@@ -157,7 +160,9 @@ namespace Game
                     case Status.Alive:
                         break;
                     default:
-                        break;
+                        Console.WriteLine("ERROR");
+                        gameBoard.DebugHelper();
+                        return;
                 }
                 //Console.Clear();
 
