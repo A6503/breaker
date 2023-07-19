@@ -18,7 +18,7 @@ namespace Game
 
     }
 
-    public enum Status
+    public enum GameStatus
     {
         Alive = 0,
         Dead = 1,
@@ -38,7 +38,7 @@ namespace Game
 
         //Current state of the game board
         private int difficultyLevel = 1; // Value that determines toughness of blocks
-        Status gameState = Status.Alive; // State of game
+        GameStatus gameState = GameStatus.Alive; // State of game
         int score = 0; // Accumulated score
 
         // Bouncer
@@ -47,8 +47,8 @@ namespace Game
         // Ball details
         int[] ballLocation; // The location of the ball on the board
         bool movement = false; // Whether the ball is freely moving or not
-        int yDirection = 0; // Movement in y-axis
-        int xDirection = 0; // Movement in x-axis
+        int yDirection = 0; // Movement in y-axis: positive towards the bottom
+        int xDirection = 0; // Movement in x-axis: positive towards the right
         private enum Angle
         {
             None = 0, LowAngle = 1, NormalAngle = 2, HighAngle = 3, // Higher angle means a steeper trajectory, None for vertical movement
@@ -111,6 +111,9 @@ namespace Game
                     break;
                 case 5:
                     builder = new Map5();
+                    break;
+                case 6:
+                    builder = new Map6();
                     break;
                 default:
                     return;
@@ -271,16 +274,16 @@ namespace Game
             bool xFlip = false;
             int edgeBounce = 0;
             Angle newAngle = ballAngle;
+            Console.WriteLine("{0}", Math.Abs(bouncerLocation - ballLocation[0]));
             // If the ball is at the bottom then die
-            Console.WriteLine("{0}, {1}", newAngle, ballAngle);
             if (ypos == boardHeight - 1) 
             {
                 Death();
-                gameState = Status.Dead;
                 return;
             }
             else
             {
+
                 if (boardArray[xpos + xDirection, ypos] != 0 | boardArray[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
                 {
                     // Check right/left side
@@ -288,6 +291,7 @@ namespace Game
                     {
                         case (int)BoardTile.Wall:
                             xFlip = true;
+                          
                             break;
 
                         case > 0:
@@ -333,15 +337,14 @@ namespace Game
                 }
                 else if (boardArray[xpos + xDirection, ypos + yDirection] > 0)
                     // Adjacent tiles are clear, so check the corners.
-                    // Note that this can't be the corner of the board, since 
-                    // there is always an adjacent tile if the Ball is at the corner.
+                    // Note that this can't be a Wall, since 
+                    // there is always an adjacent tile if the Ball is next to a Wall.
                     
                     switch (boardArray[xpos + xDirection, ypos + yDirection])
                     {
                         case (int)BoardTile.BouncerLeft:
                             yFlip = true;
                             edgeBounce = -1;
-                            newAngle = (Angle)(((int)(Angle)ballAngle + 1) % 4); 
 
                             break;
                         case (int)BoardTile.BouncerCenter:
@@ -361,24 +364,30 @@ namespace Game
                             break;
 
                         default:
-                            gameState = Status.Debug;
+                            gameState = GameStatus.Debug;
                             return;
 
                     }
             }
-            if (edgeBounce != 0) 
-            { 
+
+            if (xFlip) { xDirection *= -1; }
+            if (yFlip) { yDirection *= -1; }
+
+            if (edgeBounce != 0)
+            {
                 xDirection = edgeBounce;
+                if (boardArray[xpos + xDirection, ypos] != 0)
+                {
+                    xDirection *= -1;
+                }
                 int prevAngleInt = (int)(Angle)ballAngle;
                 int newAngleInt = (prevAngleInt + 1) % 4;
                 newAngle = (Angle)newAngleInt;
             }
-            if (xFlip) { xDirection *= -1; }
-            if (yFlip) { yDirection *= -1; }
             ballAngle = newAngle;
             
 
-            if (totalBlocks == 0) { gameState = Status.Victory; }
+            if (totalBlocks == 0) { gameState = GameStatus.Victory; }
             else 
             {
                 // Move the ball
@@ -417,13 +426,28 @@ namespace Game
         }
 
         /// <summary>
-        /// Provides a visual of the destruction of the Ball, then clears the leftover values.
+        /// Called when the Ball reaches the lower layer. Provides a final check for the location of the Ball
+        /// compared to the location of the Bouncer, then changes the game state as appropriate.
+        /// For leniency, if the Bouncer was moved to the correct location at the end,
+        /// does not count as a life lost.
         /// </summary>
         private void Death()
         {
+            if (Math.Abs(bouncerLocation - ballLocation[0]) < 2)
+            {
+                ballLocation[1] = boardHeight - 2;
+                ballAngle = Angle.None;
+                xDirection = 0;
+                yDirection = -1;
+                return;
+            }
+            else
+            {
+                gameState = GameStatus.Dead;
+                boardArray[ballLocation[0], ballLocation[1]] = -6;
+                DrawBoard();
+            }
 
-            boardArray[ballLocation[0], ballLocation[1]] = -6;
-            DrawBoard();
 
         }
 
@@ -434,7 +458,7 @@ namespace Game
         /// <returns></returns>
         public int Reset()
         {
-            gameState = Status.Alive;
+            gameState = GameStatus.Alive;
             bouncerLocation = boardWidth / 2;
             ballLocation = new int[2] { boardWidth / 2, boardHeight - 1 };
             movement = false; yDirection = 0; xDirection = 0; ballAngle = Angle.None; ballTime = 0;
@@ -446,7 +470,7 @@ namespace Game
         /// Returns the current gameState (Alive, Dead, Victory)
         /// </summary>
         /// <returns></returns>
-        public Status GetStatus(){
+        public GameStatus GetStatus(){
             return gameState;
         }
 

@@ -13,7 +13,7 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.WriteLine("HelloWorld");
-            int difficulty = 2;
+            int difficulty = 1;
             bool quit = false;
             while (!quit)
             {

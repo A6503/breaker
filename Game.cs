@@ -53,7 +53,7 @@ namespace Game
             Console.WriteLine("Select map: (1-5)");
             var mapSelect = Console.ReadLine();
             int.TryParse(mapSelect, out mapStyle);
-            while (mapStyle < 1 | mapStyle > 5)
+            while (mapStyle < 1 | mapStyle > 6)
             {
                 Console.WriteLine("Invalid input. Try again");
                 Console.WriteLine("Select map: (1-5)");
@@ -151,13 +151,13 @@ namespace Game
 
                 switch (gameBoard.GetStatus())
                 {
-                    case Status.Dead:
+                    case GameStatus.Dead:
                         LifeLost();
                         break;
-                    case Status.Victory:
+                    case GameStatus.Victory:
                         Victory();
                         break;
-                    case Status.Alive:
+                    case GameStatus.Alive:
                         break;
                     default:
                         Console.WriteLine("ERROR");
@@ -202,6 +202,8 @@ namespace Game
         /// </summary>
         private void Victory()
         {
+            gameBoard.Move(0);
+            gameBoard.DrawBoard();
             Console.WriteLine("You win!");
             int score = gameBoard.GetScore();
             Console.WriteLine("Your final score was {0}", score);
