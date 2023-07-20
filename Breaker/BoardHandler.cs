@@ -144,7 +144,7 @@ namespace Game
             {
                 Console.WriteLine("\n");
             }
-            Console.WriteLine("     SCORE: {0}", score);
+            Console.WriteLine("  SCORE: {0}", score);
             for (int h = 0; h < boardHeight; h++)
             {
                 Console.Write("  ");
