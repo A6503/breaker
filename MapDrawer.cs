@@ -57,9 +57,9 @@ public class Map2: IMapBuilder
 			iterationCounter++;
 			return 0;
 		}
-		blocksPlaced += difficulty+3;
+		blocksPlaced += difficulty;
 		iterationCounter++;
-		return difficulty+3;
+		return difficulty;
 	}
 	public void ObserveSize(int width, int height)
 	{
@@ -85,8 +85,8 @@ public class Map3 : IMapBuilder
             if((iterationCounter % maxWidth) % 3 == 1)
             {
                 iterationCounter++;
-                blocksPlaced += difficulty + 2;
-                return difficulty + 2;
+                blocksPlaced += difficulty;
+                return difficulty;
             }
             else
             {
@@ -97,9 +97,9 @@ public class Map3 : IMapBuilder
         }
         else
         {
-            blocksPlaced += difficulty + 2;
+            blocksPlaced += difficulty;
             iterationCounter++;
-            return difficulty + 2;
+            return difficulty;
         }
         
     }
@@ -123,9 +123,9 @@ public class Map4 : IMapBuilder
     {
         if (iterationCounter % 5 == 0)
         {
-            blocksPlaced += difficulty*3;
+            blocksPlaced += difficulty;
             iterationCounter++;
-            return difficulty*3;
+            return difficulty;
         }
         iterationCounter++;
         return 0;
@@ -154,8 +154,8 @@ public class Map5 : IMapBuilder
             if ((iterationCounter % maxWidth) < (maxWidth / 3) + 1 | (iterationCounter % maxWidth)+1 > maxWidth - (maxWidth / 3) - 1)
             {
                 iterationCounter++;
-                blocksPlaced += difficulty * 2;
-                return difficulty * 2;
+                blocksPlaced += difficulty;
+                return difficulty;
             }
             else
             {
@@ -169,8 +169,8 @@ public class Map5 : IMapBuilder
             if ((iterationCounter % maxWidth) < maxWidth / 5 | (iterationCounter % maxWidth)+1 > maxWidth - (maxWidth / 5))
             {
                 iterationCounter++;
-                blocksPlaced += difficulty * 2;
-                return difficulty * 2;
+                blocksPlaced += difficulty;
+                return difficulty;
             }
             else
             {

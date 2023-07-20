@@ -25,26 +25,26 @@ namespace Game
         /// The Game object uses the level parameter to determine the durability of the Blocks in the game.
         /// </summary>
         /// <param name="level"></param>
-        public Game(int level)
+        public Game()
         {
             livesLeft = 3;
             gameOver = false;
             serveState = true;
             mapStyle = 0;
-            difficulty = level;
+            difficulty = 1;
         }
 
         /// <summary>
         /// Provides instructions for the player and creates a new BoardHandler depending on the option selected.
         /// </summary>
-        private void Setup()
+        private void SetupGameBoard()
         {
             
             Console.WriteLine("Welcome to BlockBreaker");
             Console.WriteLine("(press any key to continue...)");
             Console.ReadKey();
             Console.WriteLine("\nBreak the blocks to win! Move the bouncer with A and D to bounce the ball.");
-            Console.WriteLine("Type X to exit");
+            Console.WriteLine("Type X to exit at any time");
             Console.WriteLine("(press any key to continue...)");
             Console.ReadKey();
             Console.WriteLine("\nYou have 3 lives.");
@@ -63,6 +63,34 @@ namespace Game
 
             Console.WriteLine("Selected map: {0}", mapStyle);
 
+            // Player chooses difficulty
+            Console.WriteLine("Select difficulty: (1-9)");
+            var lvlSelect = Console.ReadLine();
+            int.TryParse(lvlSelect, out difficulty);
+            while (difficulty < 1 | difficulty > 9)
+            {
+                Console.WriteLine("Invalid input. Try again");
+                Console.WriteLine("Select difficulty: (1-9)");
+                lvlSelect = Console.ReadLine();
+                int.TryParse(lvlSelect, out difficulty);
+            }
+
+            Console.WriteLine("Selected difficulty: {0}", mapStyle);
+
+            // Player chooses size of map
+            Console.WriteLine("Enter the size of the map: (5-30)");
+            var sizeSelect = Console.ReadLine();
+            int.TryParse(sizeSelect, out size);
+            while (size < 5 | size > 30)
+            {
+                Console.WriteLine("Invalid input. Try again");
+                Console.WriteLine("Enter the size of the map: (5-30)");
+                sizeSelect = Console.ReadLine();
+                int.TryParse(sizeSelect, out size);
+            }
+
+            Console.WriteLine("Generated Map.");
+
             // Initialize the GameBoard
             gameBoard = new BoardHandler(size, size, difficulty);
             gameBoard.BuildBoard(mapStyle);
@@ -77,11 +105,11 @@ namespace Game
         /// Starts the game for the player. Loops through gameplay until the gameOver state is reached 
         /// by any means.
         /// </summary>
-        public void StartGame()
+        public void PlayGame()
         {
             // Prepare the Board
 
-            Setup();
+            SetupGameBoard();
             
             while (!gameOver)
             {

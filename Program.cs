@@ -13,12 +13,11 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.WriteLine("HelloWorld");
-            int difficulty = 1;
             bool quit = false;
             while (!quit)
             {
-                Game.Game play = new Game.Game(difficulty);
-                play.StartGame();
+                Game.Game play = new Game.Game();
+                play.PlayGame();
                 Console.WriteLine("Play again? (type Y)");
                 ConsoleKeyInfo response = Console.ReadKey();
                 switch(response.Key)
