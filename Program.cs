@@ -19,11 +19,12 @@ namespace ConsoleApp1
             {
                 Game.Game play = new Game.Game(difficulty);
                 play.StartGame();
-                Console.WriteLine("Play again? (Y/N)");
+                Console.WriteLine("Play again? (type Y)");
                 ConsoleKeyInfo response = Console.ReadKey();
                 switch(response.Key)
                 {
                     case ConsoleKey.Y:
+                        Console.WriteLine();
                         break;
                     default:
                         quit = true;
