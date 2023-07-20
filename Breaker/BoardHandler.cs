@@ -147,9 +147,10 @@ namespace Game
             Console.WriteLine("     SCORE: {0}", score);
             for (int h = 0; h < boardHeight; h++)
             {
+                Console.Write("  ");
                 for (int w = 0; w < boardWidth; w++)
                 {
-                    Console.WriteLine("  ");
+                    
                     switch ((BoardTile)boardLayout[w, h])
                     {
                         case BoardTile.Empty:
