@@ -27,3 +27,7 @@ At higher difficulties, blocks will require multiple bounces to break.
 <img width="300" src="win.PNG" alt="victory screen"></br>
 Break all the blocks to win. More blocks broken means a higher score.
 </p>
+<p>
+<img width="300" src="highscore.PNG" alt="high scores"></br>
+At the end, view existing high scores. You may enter your name if you are in the top ten.
+</p>
