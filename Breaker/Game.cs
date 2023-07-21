@@ -75,7 +75,7 @@ namespace Game
                 int.TryParse(lvlSelect, out difficulty);
             }
 
-            Console.WriteLine("Selected difficulty: {0}", mapStyle);
+            Console.WriteLine("Selected difficulty: {0}", difficulty);
 
             // Player chooses size of map
             Console.WriteLine("Enter the size of the map: (5-30)");
@@ -105,7 +105,7 @@ namespace Game
         /// Starts the game for the player. Loops through gameplay until the gameOver state is reached 
         /// by any means.
         /// </summary>
-        public void PlayGame()
+        public int PlayGame()
         {
             // Prepare the Board
 
@@ -188,16 +188,16 @@ namespace Game
                     case GameStatus.Alive:
                         break;
                     default:
-                        Console.WriteLine("ERROR");
-                        gameBoard.DebugHelper();
-                        return;
+                        gameBoard.DebugHelper(); // SHOULD NOT HAPPEN
+                        return 0;
                 }
                 //Console.Clear();
 
 
             }
-            Console.WriteLine("The Game is over");
+            Console.WriteLine("Game Over");
             Console.ReadKey();
+            return gameBoard.GetScore();
         }
 
         /// <summary>

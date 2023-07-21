@@ -283,7 +283,35 @@ namespace Game
             else
             {
 
-                if (boardLayout[xpos + xDirection, ypos] != 0 | boardLayout[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
+                if (boardLayout[xpos + 1, ypos] != 0 & boardLayout[xpos - 1, ypos] != 0 & xDirection != 0) // Ball may be in tight spot
+                {
+                    switch (boardLayout[xpos, ypos + 1]) // Just get it out
+                    {
+                        case 0:
+                            yDirection = 1;
+                            xDirection = 0;
+                            break;
+                        default:
+                            yDirection = -1;
+                            xDirection = 0;
+                            break;
+                    }
+                }
+                else if (boardLayout[xpos, ypos + 1] != 0 & boardLayout[xpos, ypos - 1] != 0) // Ball may be in tight spot
+                {
+                    switch (boardLayout[xpos + 1, ypos]) // Force it out
+                    {
+                        case 0:
+                            xDirection = 1;
+                            ballLocation[0] += 1;
+                            break;
+                        default:
+                            xDirection = -1;
+                            ballLocation[0] = +1;
+                            break;
+                    }
+                }
+                else if (boardLayout[xpos + xDirection, ypos] != 0 | boardLayout[xpos, ypos + yDirection] != 0) // Check if adjacent tiles are solid
                 {
                     // Check right/left side
                     switch (boardLayout[xpos + xDirection, ypos])
