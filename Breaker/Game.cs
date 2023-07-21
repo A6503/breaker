@@ -11,13 +11,14 @@ namespace Game
 
     public class Game
     {
-        static int size = 10; // Width and height to build the board
+        static int timeInterval = 200; // Time between "frames" in milliseconds
 
         int livesLeft; // How many lives remaining
         bool gameOver; // If true, end the game
         bool serveState; // If true, the ball does not move, and the console waits for player input
         int mapStyle; // Which map to draw
         int difficulty; // The higher the value, the harder it is to break the blocks
+        int size = 0; // Size of the board
 
         BoardHandler gameBoard = new BoardHandler(0, 0, 0); // The gameBoard object representing the board
 
@@ -150,7 +151,7 @@ namespace Game
 
                 gameBoard.DrawBoard();
                 // Wait for the player to input, then update.
-                Thread.Sleep(200); 
+                Thread.Sleep(timeInterval); 
                 if (Console.KeyAvailable)
                 {
                     ConsoleKeyInfo playerMove = Console.ReadKey();
@@ -174,7 +175,7 @@ namespace Game
                 {
                     gameBoard.Move(0);
                 }
-
+                Console.Clear();
 
 
                 switch (gameBoard.GetStatus())
